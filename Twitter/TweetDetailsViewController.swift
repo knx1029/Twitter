@@ -17,6 +17,9 @@ class TweetDetailsViewController: UIViewController {
     @IBOutlet weak var fullnameLabel: UILabel!
     @IBOutlet weak var usernameLabel: UILabel!
     
+    @IBOutlet weak var favoriteButton: UIButton!
+    @IBOutlet weak var replyButton: UIButton!
+    @IBOutlet weak var retweetButton: UIButton!
     
     var tweet: Tweet?
     
@@ -43,8 +46,17 @@ class TweetDetailsViewController: UIViewController {
             if let date = tweet.createdAt {
                 timeLabel.text = date
             }
+            if tweet.favorited {
+                favoriteButton.setImage(UIImage(named: "fav"), for: .normal)
+            } else {
+                favoriteButton.setImage(UIImage(named: "heart"), for: .normal)
+            }
+        } else {
+            favoriteButton.setImage(UIImage(named: "heart"), for: .normal)
         }
-
+        
+        replyButton.setImage(UIImage(named: "reply"), for: .normal)
+        retweetButton.setImage(UIImage(named: "retweet"), for: .normal)
     }
 
     override func didReceiveMemoryWarning() {

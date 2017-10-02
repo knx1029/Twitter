@@ -49,6 +49,21 @@ class TwitterClient {
         })
     }
     
+    class func postTweet(content: String, onSuccess: @escaping (Tweet) -> Void, onFailure: @escaping (String) -> Void) {
+        let parameters = NSMutableDictionary()
+        let encodedContent = content.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+        parameters.setValue(encodedContent, forKey: "status")
+        client.post("1.1/statuses/update.json", parameters: parameters, progress: nil, success: { (dataTask: URLSessionDataTask, response: Any) -> Void in
+            if let tweetDict = response as? NSDictionary {
+                let tweet = Tweet(dict: tweetDict)
+                onSuccess(tweet)
+            }
+        }, failure: { (dataTask: URLSessionDataTask?, error: Error) -> Void in
+            print("Error in post Tweet: \(error.localizedDescription)")
+            onFailure(error.localizedDescription)
+        })
+    }
+    
     private class func failedOnAccessToken(error: Error?) {
         print("Error in fetching AccessToken: \(error?.localizedDescription)")
     }

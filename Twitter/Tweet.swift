@@ -23,7 +23,9 @@ class Tweet: NSObject {
             self.author = User(dict: userDict)
         }
         
-        self.text = dict["text"] as? String
+        let encodedText = dict["text"] as? String
+        self.text = encodedText?.removingPercentEncoding
+        print("encoded: \(encodedText), text: \(self.text)")
         self.createdAt = dict["created_at"] as? String
         self.retweetCount = dict["retweet_count"] as? Int ?? 0
         self.favoriteCount = dict["favourites_count"] as? Int ?? 0
