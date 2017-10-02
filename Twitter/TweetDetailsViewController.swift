@@ -59,8 +59,42 @@ class TweetDetailsViewController: UIViewController {
         retweetButton.setImage(UIImage(named: "retweet"), for: .normal)
     }
 
+    @IBAction func favoriteTapped(_ sender: Any) {
+        if (tweet!.favorited == false) {
+            TwitterClient.favorite(id: tweet!.id!, onSuccess: { () -> Void in
+                self.tweet!.favorited = true
+                self.favoriteButton.setImage(UIImage(named: "fav"), for: .normal)
+            }, onFailure: { (error: String) -> Void in })
+        } else {
+            TwitterClient.unfavorite(id: tweet!.id!, onSuccess: { () -> Void in
+                self.tweet!.favorited = false
+                self.favoriteButton.setImage(UIImage(named: "heart"), for: .normal)
+            }, onFailure: { (error: String) -> Void in })
+        }
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if (segue.destination is UINavigationController) {
+            let controller = segue.destination as! UINavigationController
+            let vc = controller.topViewController!
+            if (vc is NewTweetViewController) {
+                print("new tweet")
+                let newTweetVc = vc as! NewTweetViewController
+                newTweetVc.tweetId = tweet?.id!
+            } else if (vc is TweetsViewController) {
+                let tweetsViewVc = vc as! TweetsViewController
+                TwitterClient.retweet(id: tweet!.id!, onSuccess: { (tweet: Tweet) -> Void in
+                    tweetsViewVc.addTweet(tweet: tweet)
+                }, onFailure: { (error: String) -> Void in
+                })
+            } else {
+                print("transit to \(type(of: vc))")
+            }
+        }
     }
 }

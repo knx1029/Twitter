@@ -49,10 +49,14 @@ class TwitterClient {
         })
     }
     
-    class func postTweet(content: String, onSuccess: @escaping (Tweet) -> Void, onFailure: @escaping (String) -> Void) {
+    class func postTweet(content: String, replyId: String?, onSuccess: @escaping (Tweet) -> Void, onFailure: @escaping (String) -> Void) {
         let parameters = NSMutableDictionary()
-        let encodedContent = content.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
-        parameters.setValue(encodedContent, forKey: "status")
+        parameters.setValue(content, forKey: "status")
+        //let encodedContent = content.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+        //parameters.setValue(encodedContent, forKey: "status")
+        if let replyId = replyId {
+            parameters.setValue(replyId, forKey: "in_reply_to_status_id")
+        }
         client.post("1.1/statuses/update.json", parameters: parameters, progress: nil, success: { (dataTask: URLSessionDataTask, response: Any) -> Void in
             if let tweetDict = response as? NSDictionary {
                 let tweet = Tweet(dict: tweetDict)
@@ -63,6 +67,40 @@ class TwitterClient {
             onFailure(error.localizedDescription)
         })
     }
+    
+    class func retweet(id: String, onSuccess: @escaping (Tweet) -> Void, onFailure: @escaping (String) -> Void) {
+        let url = "1.1/statuses/retweet/\(id).json"
+        client.post(url, parameters: nil, progress: nil, success: { (dataTask: URLSessionDataTask, response: Any) -> Void in
+            if let tweetDict = response as? NSDictionary {
+                let tweet = Tweet(dict: tweetDict)
+                onSuccess(tweet)
+            }
+        }, failure: { (dataTask: URLSessionDataTask?, error: Error) -> Void in
+            print("Error in reweet: \(error.localizedDescription)")
+            onFailure(error.localizedDescription)
+        })
+    }
+    
+    class func favorite(id: String, onSuccess: @escaping () -> Void, onFailure: @escaping (String) -> Void) {
+        let url = "1.1/favorites/create.json?id=\(id)"
+        client.post(url, parameters: nil, progress: nil, success: { (dataTask: URLSessionDataTask, response: Any) -> Void in
+            onSuccess()
+        }, failure: { (dataTask: URLSessionDataTask?, error: Error) -> Void in
+            print("Error in favorite: \(error.localizedDescription)")
+            onFailure(error.localizedDescription)
+        })
+    }
+    
+    class func unfavorite(id: String, onSuccess: @escaping () -> Void, onFailure: @escaping (String) -> Void) {
+        let url = "1.1/favorites/destroy.json?id=\(id)"
+        client.post(url, parameters: nil, progress: nil, success: { (dataTask: URLSessionDataTask, response: Any) -> Void in
+            onSuccess()
+        }, failure: { (dataTask: URLSessionDataTask?, error: Error) -> Void in
+            print("Error in unfavorite: \(error.localizedDescription)")
+            onFailure(error.localizedDescription)
+        })
+    }
+
     
     private class func failedOnAccessToken(error: Error?) {
         print("Error in fetching AccessToken: \(error?.localizedDescription)")

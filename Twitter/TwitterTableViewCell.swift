@@ -20,6 +20,8 @@ class TwitterTableViewCell: UITableViewCell {
     @IBOutlet weak var contentLabel: UILabel!
     
     @IBOutlet weak var dateLabel: UILabel!
+    @IBOutlet weak var numFavLabel: UILabel!
+    @IBOutlet weak var numRetweetsLabel: UILabel!
     
     func set(_ tweet: Tweet) {
         if let text = tweet.text {
@@ -40,6 +42,8 @@ class TwitterTableViewCell: UITableViewCell {
         if let date = tweet.createdAt {
             dateLabel.text = TwitterTableViewCell.getApproximateTime(dateString: date)
         }
+        numFavLabel.text = "\(tweet.favoriteCount)"
+        numRetweetsLabel.text = "\(tweet.retweetCount)"
     }
     
     private class func getApproximateTime(dateString: String) -> String {

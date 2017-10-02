@@ -54,6 +54,10 @@ class TweetsViewController: UIViewController, UITableViewDelegate, UITableViewDa
             if (vc is LoginViewController) {
                 print("logout Tapped")
                 User.currentUser = nil
+            } else if (vc is NewTweetViewController) {
+                print("new tweet")
+                let newTweetVc = vc as! NewTweetViewController
+                newTweetVc.tweetId = nil
             } else {
                 print("transit to \(type(of: vc))")
             }
@@ -80,5 +84,10 @@ class TweetsViewController: UIViewController, UITableViewDelegate, UITableViewDa
     func refreshControlAction(_ refreshControl: UIRefreshControl) {
         print("refresh!")
         fetchTweets(doSomething: refreshControl.endRefreshing)
+    }
+    
+    func addTweet(tweet: Tweet) {
+        self.tweets = [tweet] + self.tweets
+        self.tweetsTable.reloadData()
     }
 }
