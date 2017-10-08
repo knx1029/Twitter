@@ -11,32 +11,26 @@ import UIKit
 
 class LoginViewController: UIViewController {
 
+    var hamburgerController: HamburgerViewController!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        if User.currentUser != nil {
-            self.presentTweets()
-        }
-
-        // Do any additional setup after loading the view.
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
     
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+    }
 
     @IBAction func onLogin(_ sender: Any) {
         TwitterClient.deauthorize()
-        TwitterClient.fetchRequestToken()
+        TwitterClient.attemptLogin { 
+            self.presentTweets()
+        }
     }
     
     func presentTweets() {
-        print("present tweets")
-        let controller = storyboard?.instantiateViewController(withIdentifier: "tweetsNaVC") as! UINavigationController
-        // let vc = controller.topViewController as! TweetsViewController
-        self.dismiss(animated: true, completion: nil)
-        self.present(controller, animated: true)
+        let hamburgerController = HamburgerViewController.initializeHamburgerViewController()
+        dismiss(animated: true, completion: nil)
+        present(hamburgerController, animated: true)
     }
 }

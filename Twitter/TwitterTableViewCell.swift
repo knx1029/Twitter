@@ -11,7 +11,10 @@ import UIKit
 
 class TwitterTableViewCell: UITableViewCell {
 
-    @IBOutlet weak var userProfileImageView: UIImageView!
+    //@IBOutlet weak var userProfileImageView: UIImageView!
+    
+    @IBOutlet weak var userProfileButton: UIButton!
+    
     
     @IBOutlet weak var userFullnameLabel: UILabel!
     
@@ -23,17 +26,33 @@ class TwitterTableViewCell: UITableViewCell {
     @IBOutlet weak var numFavLabel: UILabel!
     @IBOutlet weak var numRetweetsLabel: UILabel!
     
+    @IBOutlet weak var replyButton: UIButton!
+    
+    @IBOutlet weak var retweetButton: UIButton!
+    
+    @IBOutlet weak var favButton: UIButton!
+    
+    var tweet: Tweet? = nil
+    
+    weak var buttonTappedDelegate: ButtonTappedDelegate? = nil
+    
+    func setDelegate(_ delegate: ButtonTappedDelegate) {
+        self.buttonTappedDelegate = delegate
+    }
+    
     func set(_ tweet: Tweet) {
+        self.tweet = Tweet(copyFrom: tweet)
         if let text = tweet.text {
             contentLabel.text = text
-            contentLabel.sizeToFit()
+            // contentLabel.sizeToFit()
         }
         if let user = tweet.author {
             if let username = user.name {
                 userFullnameLabel.text = username
             }
             if let url = user.profileUrl {
-                userProfileImageView.setImageWith(url)
+                userProfileButton.setBackgroundImageFor(.normal, with: url, placeholderImage: nil)
+                //userProfileButton.setImageFor(.normal, with: url)
             }
             if let screenName = user.screenName {
                 usernameLabel.text = "@\(screenName)"
@@ -44,6 +63,12 @@ class TwitterTableViewCell: UITableViewCell {
         }
         numFavLabel.text = "\(tweet.favoriteCount)"
         numRetweetsLabel.text = "\(tweet.retweetCount)"
+        
+        if tweet.favorited {
+            favButton.setImage(UIImage(named: "fav"), for: .normal)
+        } else {
+            favButton.setImage(UIImage(named: "heart"), for: .normal)
+        }
     }
     
     private class func getApproximateTime(dateString: String) -> String {
@@ -83,4 +108,27 @@ class TwitterTableViewCell: UITableViewCell {
         // Configure the view for the selected state
     }
 
+    @IBAction func onFav(_ sender: UIButton) {
+        if let delegate = buttonTappedDelegate {
+            delegate.onFav(tweet: self.tweet!, favButton: sender)
+        }
+    }
+    
+    @IBAction func onRetweet(_ sender: UIButton) {
+        if let delegate = buttonTappedDelegate {
+            delegate.onRetweet(tweet: self.tweet!, retweetButton: sender)
+        }
+    }
+    
+    @IBAction func onReply(_ sender: UIButton) {
+        if let delegate = buttonTappedDelegate {
+            delegate.onReply(tweet: self.tweet!, replyButton: sender)
+        }
+    }
+    
+    @IBAction func onProfile(_ sender: UIButton) {
+        if let delegate = buttonTappedDelegate {
+            delegate.onProfile(tweet: self.tweet!)
+        }
+    }
 }

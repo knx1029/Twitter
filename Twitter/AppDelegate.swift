@@ -17,35 +17,36 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        //let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        //let controller = storyboard.instantiateViewController(withIdentifier: "loginNaVC") as! UINavigationController
-        //self.window?.rootViewController = controller
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        
+        if User.currentUser != nil {
+            switchToTweets()
+        }
+        
+        NotificationCenter.default.addObserver(forName: TwitterClient.USER_DID_LOGOUT, object: nil, queue: OperationQueue.main) { (Notification) in
+            self.switchToLogin()
+        }
+        
         return true
     }
     
     func application(_ app: UIApplication, open url: URL, options: [UIApplicationOpenURLOptionsKey : Any] = [:]) -> Bool {
         print("open url?")
-        let controller = self.window!.rootViewController as! UINavigationController
-        let vc = controller.topViewController as! LoginViewController
         
-        TwitterClient.authorize(url: url, doSomething: { () -> Void in
-            TwitterClient.getUser(processUser: { (user: User) -> Void in
-                User.currentUser = user
-                print("user is \(user.name)")
-                // transit to Tweets if we are in Login page
-                //let vc = controller.topViewController!
-                vc.presentTweets()
-            /*
-                if (vc is)
-                print("Controller is \(type(of: vc))")
-                if let vc = vc as? LoginViewController {
-                    vc.presentTweets()
-                } else {
-                    
-                }*/
-            })
-        })
+        TwitterClient.finishLogin(url: url)
         return true
+    }
+    
+    private func switchToLogin() {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        
+        let loginController = storyboard.instantiateViewController(withIdentifier: "loginVC") as! LoginViewController
+        self.window?.rootViewController = loginController
+    }
+    
+    private func switchToTweets() {
+        let hamburgerController = HamburgerViewController.initializeHamburgerViewController()
+        self.window?.rootViewController = hamburgerController
     }
     
     func applicationWillResignActive(_ application: UIApplication) {

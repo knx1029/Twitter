@@ -12,10 +12,31 @@ import Foundation
 
 class TwitterClient {
     
+    static let USER_DID_LOGOUT: NSNotification.Name = NSNotification.Name("UserDidLogout")
+    
     private static var client: BDBOAuth1SessionManager! = getTwitterClient()
     
     class func deauthorize() {
         TwitterClient.client.deauthorize()
+    }
+    
+    private static var loginSuccess: (() -> Void)?
+    
+    class func attemptLogin(loginSuccess: @escaping () -> Void) {
+        TwitterClient.loginSuccess = loginSuccess
+        fetchRequestToken()
+    }
+    
+    class func finishLogin(url: URL) {
+        TwitterClient.authorize(url: url, doSomething: { () -> Void in
+            TwitterClient.getUser(processUser: { (user: User) -> Void in
+                User.currentUser = user
+                print("user is \(user.name)")
+                if let loginSuccess = TwitterClient.loginSuccess {
+                    loginSuccess()
+                }
+            })
+        })
     }
     
     class func fetchRequestToken() {
@@ -27,14 +48,36 @@ class TwitterClient {
         client.fetchAccessToken(withPath: "oauth/access_token", method: "POST", requestToken: requestToken, success: {(credsOpt: BDBOAuth1Credential?) -> Void in doSomething() }, failure: self.failedOnAccessToken)
     }
     
-    class func fetchTweets(count: Int, processTweets: @escaping ([Tweet]) -> Void) {
+    class func fetchHomeTweets(count: Int, processTweets: @escaping ([Tweet]) -> Void) {
         client.get("1.1/statuses/home_timeline.json?count=\(count)", parameters: nil, progress: nil, success: { (dataTask: URLSessionDataTask, response: Any) -> Void in
             if let tweetDicts = response as? [NSDictionary] {
                 let tweets = Tweet.tweets(fromArray: tweetDicts)
                 processTweets(tweets)
             }
         }, failure: { (dataTask: URLSessionDataTask?, error: Error) -> Void in
-            print("Error in fetching tweets: \(error.localizedDescription)")
+            print("Error in fetching home tweets: \(error.localizedDescription)")
+        })
+    }
+    
+    class func fetchMentionTweets(count: Int, processTweets: @escaping ([Tweet]) -> Void) {
+        client.get("1.1/statuses/mentions_timeline.json?count=\(count)", parameters: nil, progress: nil, success: { (dataTask: URLSessionDataTask, response: Any) -> Void in
+            if let tweetDicts = response as? [NSDictionary] {
+                let tweets = Tweet.tweets(fromArray: tweetDicts)
+                processTweets(tweets)
+            }
+        }, failure: { (dataTask: URLSessionDataTask?, error: Error) -> Void in
+            print("Error in fetching mentions tweets: \(error.localizedDescription)")
+        })
+    }
+    
+    class func fetchUserTweets(count: Int, user: User, processTweets: @escaping ([Tweet]) -> Void) {
+        client.get("1.1/statuses/user_timeline.json?count=\(count)&screen_name=\(user.screenName!)", parameters: nil, progress: nil, success: { (dataTask: URLSessionDataTask, response: Any) -> Void in
+            if let tweetDicts = response as? [NSDictionary] {
+                let tweets = Tweet.tweets(fromArray: tweetDicts)
+                processTweets(tweets)
+            }
+        }, failure: { (dataTask: URLSessionDataTask?, error: Error) -> Void in
+            print("Error in fetching user tweets: \(error.localizedDescription)")
         })
     }
     

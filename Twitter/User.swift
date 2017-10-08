@@ -14,6 +14,9 @@ class User: NSObject {
     var profileUrl: URL?
     var profileBiggerUrl: URL?
     var tagline: String?
+    var numFollowers: Int?
+    var numTweets: Int?
+    var numFollowing: Int?
     
     var dict: NSDictionary?
     
@@ -21,10 +24,14 @@ class User: NSObject {
         name = dict["name"] as? String
         screenName = dict["screen_name"] as? String
         tagline = dict["description"] as? String
+        numFollowers = dict["followers_count"] as? Int
+        numFollowing = dict["friends_count"] as? Int
+        numTweets = dict["statuses_count"] as? Int
         let profileUrlString = dict["profile_image_url_https"] as? String
         if let profileUrlString = profileUrlString {
-            profileUrl = URL(string: profileUrlString)
-            profileBiggerUrl = URL(string: profileUrlString.replacingOccurrences(of: "_normal.png", with: "_bigger.png"))
+            let profileString = profileUrlString.replacingOccurrences(of: "_normal.", with: "_400x400.")
+            profileUrl = URL(string: profileString)
+            profileBiggerUrl = URL(string: profileString)
         }
         self.dict = dict
     }
@@ -32,6 +39,9 @@ class User: NSObject {
     init(copyFrom: User) {
         self.name = copyFrom.name
         self.screenName = copyFrom.screenName
+        self.numFollowers = copyFrom.numFollowers
+        self.numFollowing = copyFrom.numFollowing
+        self.numTweets = copyFrom.numTweets
         self.profileUrl = copyFrom.profileUrl
         self.profileBiggerUrl = copyFrom.profileBiggerUrl
         self.tagline = copyFrom.tagline
